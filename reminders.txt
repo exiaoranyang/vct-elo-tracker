@@ -1,0 +1,10 @@
+Next steps:
+
+connect IDs to stacked data set
+
+categorize the tiers of each tournament
+
+
+---ELO
+- Consider formula
+- implementation of weights
