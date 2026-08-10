@@ -66,3 +66,48 @@ stack_dfs <- function(target_dfs, name, output_dir, add_years){
   return(stacked)
   
 }
+
+### elo calc ----
+
+run_elo_calc <- function(i, eloconfigs){
+
+      #Set parameters
+      
+      i$E.Team.A <- 1/(1+10 ^ ((i$Team.B.Start.Elo - i$Team.A.Start.Elo)/400))
+      i$E.Team.B <- 1/(1+10 ^ ((i$Team.A.Start.Elo - i$Team.B.Start.Elo)/400))
+      
+      i$K.A <- dplyr::case_when(
+        i$Team.A.Start.Elo < 1200 ~ eloconfigs$K_below_1200,
+        i$Team.A.Start.Elo < 1600 ~ eloconfigs$K_below_1600,
+        i$Team.A.Start.Elo < 2000 ~ eloconfigs$K_below_2000,
+        TRUE ~ NA_real_
+      )
+      
+      i$K.B <- dplyr::case_when(
+        i$Team.B.Start.Elo < 1200 ~ eloconfigs$K_below_1200,
+        i$Team.B.Start.Elo < 1600 ~ eloconfigs$K_below_1600,
+        i$Team.B.Start.Elo < 2000 ~ eloconfigs$K_below_2000,
+        TRUE ~ NA_real_
+      )
+      
+  
+      i$Draft.Team.A.Elo <- i$Team.A.Start.Elo + 
+        i$K.A * (i$Team.A.Win - i$E.Team.A)
+      
+      i$Draft.Team.B.Elo <- i$Team.B.Start.Elo + 
+        i$K.B * ((1 - i$Team.A.Win) - i$E.Team.B)
+  
+      i$New.Team.A.Elo <- pmax(
+        eloconfigs$floor,
+        i$Draft.Team.A.Elo
+      )
+      
+      i$New.Team.B.Elo <- pmax(
+        eloconfigs$floor,
+        i$Draft.Team.B.Elo
+      )
+  
+return(i)
+
+    }
+

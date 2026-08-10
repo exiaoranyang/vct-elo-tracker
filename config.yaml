@@ -1,6 +1,12 @@
 # config.yaml
 
 paths:
-  input_dir: "../input"
+  input_dir: "../input/archive"
   output_dir: "../output"
 
+elo:
+  start: 1000
+  K_below_1200: 128
+  K_below_1600: 64
+  K_below_2000: 32
+  floor: 0
