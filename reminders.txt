@@ -1,0 +1,14 @@
+Next steps:
+
+sanity check -> order of tournaments? is it from bottom to up on the vlr.gg page
+
+create a tournament timing dictionary, create chronology ids for each match
+
+connect IDs to stacked data set
+
+categorize the tiers of each tournament
+
+
+---ELO
+- Consider formula
+- implementation of weights
