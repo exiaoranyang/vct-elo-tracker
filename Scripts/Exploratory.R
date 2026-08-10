@@ -2,11 +2,13 @@
 library(rstudioapi)
 
 if (!require("pacman")) install.packages("pacman", repos = "http://cran.us.r-project.org"); library(pacman);
-pacman::p_load(RKaggle, yaml, here, dplyr, tidyr, readr, stringr, lubridate, openxlsx, data.table, purrr)
+pacman::p_load(RKaggle, yaml, here, dplyr, tidyr, readr, stringr, lubridate, openxlsx, data.table, purrr, tidyverse)
 
 if (interactive()) {
   setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 }
+
+source("../R/functions.R")
 
 ### Set Paths ----
 
@@ -30,5 +32,4 @@ for (file in dictionary) {
 }
 
 full_scores <- parse_df(root_folders = folder_list, sub_dir = "matches", target = "scores.csv")
-stacked_full_scores <- stack_dfs(full_scores, "stacked_scores", output_dir)
-
+stacked_full_scores <- stack_dfs(target_dfs = full_scores, "stacked_scores", output_dir, TRUE)

@@ -32,11 +32,34 @@ parse_df <- function(root_folders, sub_dir, target_df){
 
 ### stack data ----
 
-stack_dfs <- function(target_dfs, name, output_dir){
+stack_dfs <- function(target_dfs, name, output_dir, add_years){
   
-  stacked <- data.table::rbindlist(
-    lapply(target_dfs, data.table::fread), fill = TRUE )
+  if (add_years) {
+    
+    years <- str_extract(dirname(target_dfs), "\\d{4}") |> 
+      as.integer()
+    
+    target_csv <- map(
+      target_dfs,
+      \(x) read_csv(x, show_col_types = FALSE))
+    
+    target_dfs <- map2(
+      target_csv,
+      years,
+      ~ mutate(.x, year = .y))
+    
+    stacked <- data.table::rbindlist(
+      target_dfs, fill = TRUE )
+    
+  } 
   
+  else {
+    
+    stacked <- data.table::rbindlist(
+      lapply(target_dfs, data.table::fread), fill = TRUE )
+    
+      }
+
   output_file_dir <- file.path(output_dir, paste0(name, ".csv"))
   write_csv(stacked, output_file_dir)
   
