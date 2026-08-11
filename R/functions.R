@@ -80,22 +80,36 @@ run_elo_calc <- function(i, eloconfigs){
         i$Team.A.Start.Elo < 1200 ~ eloconfigs$K_below_1200,
         i$Team.A.Start.Elo < 1600 ~ eloconfigs$K_below_1600,
         i$Team.A.Start.Elo < 2000 ~ eloconfigs$K_below_2000,
-        TRUE ~ NA_real_
+        TRUE ~ eloconfigs$K_above
       )
       
       i$K.B <- dplyr::case_when(
         i$Team.B.Start.Elo < 1200 ~ eloconfigs$K_below_1200,
         i$Team.B.Start.Elo < 1600 ~ eloconfigs$K_below_1600,
         i$Team.B.Start.Elo < 2000 ~ eloconfigs$K_below_2000,
-        TRUE ~ NA_real_
+        TRUE ~ eloconfigs$K_above
       )
       
+      i$C <- dplyr::case_when(
+        i$Severity == 0 ~ eloconfigs$C_low,
+        i$Severity == 1 ~ eloconfigs$C_medium,
+        i$Severity == 2 ~ eloconfigs$C_high,
+        TRUE ~ eloconfigs$C_medium
+      )
   
-      i$Draft.Team.A.Elo <- i$Team.A.Start.Elo + 
-        i$K.A * (i$Team.A.Win - i$E.Team.A)
+      # calculate new elos
       
-      i$Draft.Team.B.Elo <- i$Team.B.Start.Elo + 
-        i$K.B * ((1 - i$Team.A.Win) - i$E.Team.B)
+      i$Draft.Team.A.Elo <- i$Team.A.Start.Elo + i$K.A * 
+        ifelse( i$Team.A.Win - i$E.Team.A > 0, 
+                i$C * (i$Team.A.Win - i$E.Team.A), 
+                ifelse( i$Severity == 2, i$Team.A.Win - i$E.Team.A, 
+                        i$C * (i$Team.A.Win - i$E.Team.A) ) )
+      
+      i$Draft.Team.B.Elo <- i$Team.B.Start.Elo + i$K.B * 
+        ifelse( (1 - i$Team.A.Win) - i$E.Team.B > 0,
+                i$C * ((1 - i$Team.A.Win) - i$E.Team.B), 
+                ifelse( i$Severity == 2, (1 - i$Team.A.Win) - i$E.Team.B, 
+                        i$C * ((1 - i$Team.A.Win) - i$E.Team.B) ) )
   
       i$New.Team.A.Elo <- pmax(
         eloconfigs$floor,
