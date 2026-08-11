@@ -6,7 +6,12 @@ paths:
 
 elo:
   start: 1000
-  K_below_1200: 128
-  K_below_1600: 64
-  K_below_2000: 32
+  K_below_1200: 192
+  K_below_1600: 96
+  K_below_2000: 40
+  K_above: 16
   floor: 0
+  C_low: 0.5
+  C_medium: 1.0
+  C_high: 1.5
+  
