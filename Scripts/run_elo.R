@@ -21,7 +21,8 @@ dic_dir <- file.path(input_dir, "all_ids")
 
 ### Load Data ----
 
-matches <- read_csv(data_dir, show_col_types = FALSE)
+matches <- read_csv(data_dir, show_col_types = FALSE) %>%
+  arrange(Match.ID)
 
 dictionary <- list.files(path = dic_dir, 
                          pattern = "\\.csv$", 
@@ -31,6 +32,8 @@ for (file in dictionary) {
   df_name <- tools::file_path_sans_ext(basename(file))
   assign(df_name, read.csv(file))
 }
+
+matches_severity <- read_csv("../input/match_severity_ratings.csv", show_col_types = FALSE)
 
 ### Elo ----
 
@@ -53,6 +56,7 @@ matches <- matches %>%
     E.Team.B = NA_real_,
     K.A = NA_real_,
     K.B = NA_real_,
+    C = NA_real_,
     Draft.Team.A.Elo = NA_real_,
     Draft.Team.B.Elo = NA_real_
          )
@@ -62,6 +66,9 @@ matches <- matches %>%
     BO1 = case_when(`Team A Score` + `Team B Score` > 5 ~ 1, TRUE ~ 0),
     Team.A.Win = case_when(differential > 0 ~ 1, TRUE ~ 0)
     )
+
+matches <- matches %>%
+  left_join(matches_severity, by = c("Match.ID" = "Match ID"), multiple = "first")
 
 # iterate
 
@@ -116,6 +123,8 @@ for (i in seq_len(nrow(matches))) {
   matches$K.A[i] <- current_row$K.A
   matches$K.B[i] <- current_row$K.B
   
+  matches$C[i] <- current_row$C
+  
   matches$Draft.Team.A.Elo[i] <- current_row$Draft.Team.A.Elo
   matches$Draft.Team.B.Elo[i] <- current_row$Draft.Team.B.Elo
   
@@ -146,4 +155,34 @@ team_status_view <- team_status_view %>%
     Team.ID = as.integer(Team.ID)
   ) %>%
   left_join(all_teams_ids, by = c("Team.ID"))
+
+# and just 2026
+
+rankings_2026 <- data.frame(
+  Team.ID = names(team_status),
+  Team.Elo = sapply(team_status, function(x) x$elo),
+  row.names = NULL
+)
+
+path_2026 <- file.path(input_dir, "vct_2026", "ids", "teams_ids.csv")
+ids_2026 <- read_csv(path_2026, show_col_types = FALSE)
+
+rankings_2026 <- rankings_2026 %>%
+  mutate(
+    Team.ID = as.integer(Team.ID)
+  ) %>%
+  inner_join(ids_2026, by = c("Team.ID" = "Team ID"))
+
+# view peaks
+
+max_elo <- bind_rows(
+  matches %>% select(Team.ID = Team.A.ID, team = "Team A", elo = Team.A.End.Elo,
+                     Match.Name = Match.Name, Tournament=Tournament),
+  matches %>% select(Team.ID = Team.B.ID, team = "Team B", elo = Team.B.End.Elo,
+                     Match.Name = Match.Name, Tournament = Tournament)
+) %>%
+  group_by(Team.ID) %>%
+  slice_max(elo, n = 1, with_ties = FALSE) %>%
+  ungroup()
+
 

@@ -36,6 +36,12 @@ stacked_full_scores <- stack_dfs(target_dfs = full_scores, "stacked_scores", out
 
 ### append ids ----
 
+# NRG name fix
+
+stacked_full_scores <- stacked_full_scores %>%
+  mutate(`Team A` = if_else(`Team A` == "Mega Minors", "NRG", `Team A`),
+         `Team B` = if_else(`Team B` == "Mega Minors", "NRG", `Team B`))
+
 stacked_full_scores <- stacked_full_scores %>% 
   rename(Match.Type = "Match Type", 
          Match.Name = "Match Name")
