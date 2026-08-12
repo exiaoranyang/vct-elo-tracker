@@ -94,6 +94,11 @@ stacked_full_scores <- map(team_ids_by_year, function(file) {
 }) %>%
   list_rbind()
 
+### fix chronology ----
+
+stacked_full_scores <- order_matches(stacked_full_scores)
+
+
 ### export ----
 
 output_csv_path <- file.path(output_dir, "cleaned_matches.csv")

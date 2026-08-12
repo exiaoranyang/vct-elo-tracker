@@ -22,7 +22,15 @@ dic_dir <- file.path(input_dir, "all_ids")
 ### Load Data ----
 
 matches <- read_csv(data_dir, show_col_types = FALSE) %>%
-  arrange(Match.ID)
+  arrange(Chronology)
+
+#split data
+
+matches_prevct <- subset(matches, year <= 2022) %>%
+  arrange(Chronology)
+
+matches_postvct <- subset(matches, year > 2022) %>%
+  arrange(Chronology)
 
 dictionary <- list.files(path = dic_dir, 
                          pattern = "\\.csv$", 
@@ -37,152 +45,61 @@ matches_severity <- read_csv("../input/match_severity_ratings.csv", show_col_typ
 
 ### Elo ----
 
-# setup
+# Full run
 
-starting_elo <- config$elo$start
+run_list <- list(matches, matches_postvct, matches_prevct)
 
-team_status <- list()
+matches_elo <- list()
+status <- list()
 
-matches <- matches %>%
-  arrange(Match.ID) %>%
-  mutate(
-    Team.A.Start.Elo = NA_real_,
-    Team.B.Start.Elo = NA_real_,
-    Team.A.End.Elo = NA_real_,
-    Team.B.End.Elo = NA_real_,
-    differential = `Team A Score` - `Team B Score`,
-    Team.A.Win = NA_real_,
-    E.Team.A = NA_real_,
-    E.Team.B = NA_real_,
-    K.A = NA_real_,
-    K.B = NA_real_,
-    C = NA_real_,
-    Draft.Team.A.Elo = NA_real_,
-    Draft.Team.B.Elo = NA_real_
-         )
-
-matches <- matches %>%
-  mutate(
-    BO1 = case_when(`Team A Score` + `Team B Score` > 5 ~ 1, TRUE ~ 0),
-    Team.A.Win = case_when(differential > 0 ~ 1, TRUE ~ 0)
-    )
-
-matches <- matches %>%
-  left_join(matches_severity, by = c("Match.ID" = "Match ID"), multiple = "first")
-
-# iterate
-
-for (i in seq_len(nrow(matches))) {
+for (i in seq_along(run_list)){
   
-  current_row <- matches[i, ]
+  all_run <- run_elo(run_list[[i]], config = config$elo, matches_severity)
   
-  a_id <- current_row$Team.A.ID
-  b_id <- current_row$Team.B.ID
-  
-  # parse team A info
-  
-  if (is.null(team_status[[as.character(a_id)]])) {
-
-    Team.A.Elo <- starting_elo
-    
-  } else {
-    
-    Team.A.Elo <- team_status[[as.character(a_id)]]$elo
-  }
-  
-  # parse Team B info
-  
-  if (is.null(team_status[[as.character(b_id)]])) {
-    
-    Team.B.Elo <- starting_elo
-    
-  } else {
-    
-    Team.B.Elo <- team_status[[as.character(b_id)]]$elo
-  }
-  
-  # Save pre-match values
-  current_row$Team.A.Start.Elo <- Team.A.Elo
-  current_row$Team.B.Start.Elo <- Team.B.Elo
-  
-  # Run elo calculation
-  
-  current_row <- run_elo_calc(
-    i = current_row,
-    eloconfigs = config$elo
-  )
-  
-  # Save post-match values
-  
-  matches$Team.A.Start.Elo[i] <- current_row$Team.A.Start.Elo
-  matches$Team.B.Start.Elo[i] <- current_row$Team.B.Start.Elo
-  
-  matches$E.Team.A[i] <- current_row$E.Team.A
-  matches$E.Team.B[i] <- current_row$E.Team.B
-  
-  matches$K.A[i] <- current_row$K.A
-  matches$K.B[i] <- current_row$K.B
-  
-  matches$C[i] <- current_row$C
-  
-  matches$Draft.Team.A.Elo[i] <- current_row$Draft.Team.A.Elo
-  matches$Draft.Team.B.Elo[i] <- current_row$Draft.Team.B.Elo
-  
-  matches$Team.A.End.Elo[i] <- current_row$New.Team.A.Elo
-  matches$Team.B.End.Elo[i] <- current_row$New.Team.B.Elo
-  
-  # and status
-  
-  team_status[[as.character(a_id)]] <- list(
-    elo = current_row$New.Team.A.Elo
-  )
-  
-  team_status[[as.character(b_id)]] <- list(
-    elo = current_row$New.Team.B.Elo
-  )
+  matches_elo[[i]] <- all_run$matches
+  status[[i]]      <- all_run$team_status
 }
 
-### View all time ----
+dataset_names <- c("matches", "matches_postvct", "matches_prevct")
+names(matches_elo) <- dataset_names
+names(status)      <- dataset_names
 
-team_status_view <- data.frame(
-  Team.ID = names(team_status),
-  Team.Elo = sapply(team_status, function(x) x$elo),
-  row.names = NULL
-)
+# format status
 
-team_status_view <- team_status_view %>%
-  mutate(
-    Team.ID = as.integer(Team.ID)
-  ) %>%
-  left_join(all_teams_ids, by = c("Team.ID"))
-
-# and just 2026
-
-rankings_2026 <- data.frame(
-  Team.ID = names(team_status),
-  Team.Elo = sapply(team_status, function(x) x$elo),
-  row.names = NULL
-)
-
-path_2026 <- file.path(input_dir, "vct_2026", "ids", "teams_ids.csv")
-ids_2026 <- read_csv(path_2026, show_col_types = FALSE)
-
-rankings_2026 <- rankings_2026 %>%
-  mutate(
-    Team.ID = as.integer(Team.ID)
-  ) %>%
-  inner_join(ids_2026, by = c("Team.ID" = "Team ID"))
-
-# view peaks
-
-max_elo <- bind_rows(
-  matches %>% select(Team.ID = Team.A.ID, team = "Team A", elo = Team.A.End.Elo,
-                     Match.Name = Match.Name, Tournament=Tournament),
-  matches %>% select(Team.ID = Team.B.ID, team = "Team B", elo = Team.B.End.Elo,
-                     Match.Name = Match.Name, Tournament = Tournament)
-) %>%
-  group_by(Team.ID) %>%
-  slice_max(elo, n = 1, with_ties = FALSE) %>%
-  ungroup()
+for (i in seq_along(status)){
+  
+  print(i)
+  print(class(status[[i]]))
+  print(str(status[[i]]))
+  
+  
+  status[[i]] <- data.frame(
+    Team.ID = names(status[[i]]),
+    Team.Elo = sapply(status[[i]], function(x) x$elo),
+    row.names = NULL
+  )
+  
+  status[[i]] <- status[[i]] %>%
+    mutate(
+      Team.ID = as.integer(Team.ID)
+    ) %>%
+    left_join(all_teams_ids, by = c("Team.ID"))
+  
+}
 
 
+### export ----
+
+for (name in names(matches_elo)) {
+  
+  output_all_path <- file.path(output_dir, paste0(name, "_all.csv"))
+  fwrite(matches_elo[[name]], output_all_path)
+  
+}
+
+for (name in names(status)) {
+  
+  output_all_path <- file.path(output_dir, paste0(name, "_teamstatus.csv"))
+  fwrite(status[[name]], output_all_path)
+  
+}
