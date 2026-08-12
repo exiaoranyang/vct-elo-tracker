@@ -67,6 +67,110 @@ stack_dfs <- function(target_dfs, name, output_dir, add_years){
   
 }
 
+### order matches ----
+
+order_matches <- function(df){
+  
+  df <- df %>%
+    
+    group_by(Tournament) %>%
+    mutate(
+      .tournament_order = min(Match.ID)
+    ) %>%
+    ungroup() %>%
+    
+    # Stage category
+  
+    mutate(
+    
+      .stage_order = case_when(
+      
+      str_detect(
+        Stage,
+        regex("swiss|group stage|regular season|league play|bracket stage",
+              ignore_case = TRUE)
+      ) ~ 1L,
+      
+      str_detect(
+        Stage,
+        regex("play.?in",
+              ignore_case = TRUE)
+      ) ~ 2L,
+      
+      str_detect(
+        Stage,
+        regex("playoff|finals|knockout",
+              ignore_case = TRUE)
+      ) ~ 3L,
+      
+      str_detect(
+        Stage,
+        regex("qualifier|preliminary",
+              ignore_case = TRUE)
+      ) ~ 0L,
+      
+      str_detect(
+        Stage,
+        regex("tiebreaker",
+              ignore_case = TRUE)
+      ) ~ -1L,
+      
+      TRUE ~ 99L
+    ),
+    
+    # Playoff bracket branch
+    
+    .bracket_order = case_when(
+      
+      str_detect(
+        `Match.Type`,
+        regex("^Grand Finals?$", ignore_case = TRUE)
+      ) ~ 3L,
+      
+      str_detect(
+        `Match.Type`,
+        regex("^Lower", ignore_case = TRUE)
+      ) ~ 2L,
+      
+      str_detect(
+        `Match.Type`,
+        regex("^Upper", ignore_case = TRUE)
+      ) ~ 1L,
+      
+      str_detect(
+        `Match.Type`,
+        regex("Knockout Round", ignore_case = TRUE)
+      ) ~ -1L,
+      
+      # Normal single-elimination matches
+      TRUE ~ 1L
+    ),
+
+    # Round number
+    
+    .round_number = as.integer(
+      str_extract(
+        `Match.Type`,
+        "(?i)(?<=Round )\\d+"
+      )
+    )
+  ) %>%
+  
+    arrange(
+      year,
+      .tournament_order,
+      .stage_order,
+      .bracket_order,
+      .round_number,
+      Match.ID
+  ) %>%
+    
+    mutate(
+      Chronology = row_number()
+    ) %>%
+    
+    select(-starts_with("."))
+}
 
 
 ### elo calc ----
@@ -141,7 +245,7 @@ run_elo <- function(matches, config, matches_severity) {
   team_status <- list()
   
   matches <- matches %>%
-    arrange(Match.ID) %>%
+    arrange(Chronology) %>%
     mutate(
       Team.A.Start.Elo = NA_real_,
       Team.B.Start.Elo = NA_real_,

@@ -22,15 +22,15 @@ dic_dir <- file.path(input_dir, "all_ids")
 ### Load Data ----
 
 matches <- read_csv(data_dir, show_col_types = FALSE) %>%
-  arrange(Match.ID)
+  arrange(Chronology)
 
 #split data
 
 matches_prevct <- subset(matches, year <= 2022) %>%
-  arrange(Match.ID)
+  arrange(Chronology)
 
 matches_postvct <- subset(matches, year > 2022) %>%
-  arrange(Match.ID)
+  arrange(Chronology)
 
 dictionary <- list.files(path = dic_dir, 
                          pattern = "\\.csv$", 
