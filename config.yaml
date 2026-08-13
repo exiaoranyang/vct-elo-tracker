@@ -8,13 +8,14 @@ elo:
   start: 1000
   K_below_1200: 192
   K_below_1600: 96
-  K_below_2000: 64
-  K_above: 32
+  K_below_2000: 96
+  K_above: 64
   floor: 0
   C_low: 0.5
   C_medium: 1.0
   C_high: 1.5
   G_1: 1.0
   G_2: 1.25
+  Compression: 0.35
 
   

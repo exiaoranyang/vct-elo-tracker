@@ -68,14 +68,9 @@ names(status)      <- dataset_names
 
 for (i in seq_along(status)){
   
-  print(i)
-  print(class(status[[i]]))
-  print(str(status[[i]]))
-  
-  
   status[[i]] <- data.frame(
     Team.ID = names(status[[i]]),
-    Team.Elo = sapply(status[[i]], function(x) x$elo),
+    Team.Elo = unlist(status[[i]]),
     row.names = NULL
   )
   

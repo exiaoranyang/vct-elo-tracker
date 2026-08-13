@@ -282,8 +282,37 @@ run_elo <- function(matches, config, matches_severity) {
       multiple = "first"
     )
   
+  current_season_year <- NULL
+  
+  if (nrow(matches) > 0) {
+    current_season_year <- substr(as.character(matches$year[1]), 1, 4)
+  }
+  
   # Iterate
   for (i in seq_len(nrow(matches))) {
+    
+    # Detect if the match belongs to a new year/season
+    match_year <- substr(as.character(matches$year[i]), 1, 4)
+    
+    if (!is.null(current_season_year) && match_year != current_season_year) {
+      
+      compression <- config$Compression
+      team_names <- names(team_status)
+      # soft Elo reset
+      
+      for (j in seq_along(team_status)) {
+        current_team_id <- team_names[j]
+        old_elo <- team_status[[j]]$elo
+        
+        # Calculate new compressed score
+        new_compressed_elo <- starting_elo + (1 - compression) * (old_elo - starting_elo)
+        
+        # Force a clean rewrite back to the exact list index position
+        team_status[[j]] <- list(elo = as.numeric(new_compressed_elo))
+      }
+      
+      current_season_year <- match_year
+    }
     
     # Get IDs directly from matches
     a_id <- matches$Team.A.ID[i]
@@ -337,11 +366,11 @@ run_elo <- function(matches, config, matches_severity) {
     
     # Update team status
     team_status[[as.character(a_id)]] <- list(
-      elo = current_row$New.Team.A.Elo
+      elo = as.numeric(current_row$New.Team.A.Elo)
     )
     
     team_status[[as.character(b_id)]] <- list(
-      elo = current_row$New.Team.B.Elo
+      elo = as.numeric(current_row$New.Team.B.Elo)
     )
   }
   
@@ -351,3 +380,23 @@ run_elo <- function(matches, config, matches_severity) {
     team_status = team_status
   )
 }
+
+
+
+### find elo max ----
+
+return_max_elo <- function(df){
+  
+  bind_rows(
+    df %>% select(Team.ID = Team.A.ID, team = Team.A, elo = Team.A.End.Elo,
+                  Match.Name, Tournament),
+    df %>% select(Team.ID = Team.B.ID, team = Team.B, elo = Team.B.End.Elo,
+                  Match.Name, Tournament)
+  ) %>%
+    group_by(Team.ID) %>%
+    slice_max(elo, n = 1, with_ties = FALSE) %>%
+    ungroup()
+  
+}
+
+
