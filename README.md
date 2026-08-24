@@ -33,7 +33,7 @@ vct-elo-tracker/
 ### Formula
 
 The calculations use a basic formula as the foundation:
-1. First expected elo is calculated, where:
+1. First expected win probability is calculated, where:
 
 ```math
 E_A = \frac{1}{1+10^{(S_A - S_B)/400}}
@@ -70,7 +70,7 @@ The `C` value is a modifer that adjusts for match severity at three levels: low 
 
 The `G` value is a modifier for game differential per series (BO1 not included), where 2-0, 3-1, or 3-0 victories can have a slight increase in ELO modification versus other results.
 
-The `Compression` value, if set to <1.0, creates a season reset effect, where all present elos can be adjusted towards the base `start` elo value.
+The `Compression` value, if set to >0.0, creates a season reset effect, where all present elos can be adjusted towards the base `start` elo value.
 
 ## Results
 
