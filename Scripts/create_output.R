@@ -2,7 +2,7 @@
 library(rstudioapi)
 
 if (!require("pacman")) install.packages("pacman", repos = "http://cran.us.r-project.org"); library(pacman);
-pacman::p_load(RKaggle, yaml, here, dplyr, tidyr, readr, stringr, lubridate, openxlsx, data.table, purrr, tidyverse)
+pacman::p_load(RKaggle, yaml, here, dplyr, tidyr, readr, stringr, lubridate, openxlsx, data.table, purrr, tidyverse, knitr)
 
 if (interactive()) {
   setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -45,3 +45,26 @@ rankings_2026 <- matches_teamstatus %>%
 max_elo_all <- return_max_elo(matches_all)
 max_elo_prevct <- return_max_elo(matches_prevct_all)
 max_elo_postvct <- return_max_elo(matches_postvct_all)
+
+### export ----
+
+fwrite(max_elo_all, "../output/max_elo_all.csv")
+fwrite(max_elo_prevct, "../output/max_elo_prevct.csv")
+fwrite(max_elo_postvct, "../output/max_elo_postvct.csv")
+fwrite(rankings_2026, "../output/rankings_2026.csv")
+
+# convert .tex format
+
+top_16_pre <- max_elo_prevct %>%
+  arrange(desc(elo)) %>%
+  head(, n = 16)
+
+latex_pre <- kable(top_16_pre, format = "latex", booktabs = TRUE)
+writeLines(latex_pre, "../output/top_16_max_pre.tex")
+
+top_16_post <- max_elo_postvct %>%
+  arrange(desc(elo)) %>%
+  head(, n = 16)
+
+latex_post <- kable(top_16_post, format = "latex", booktabs = TRUE)
+writeLines(latex_post, "../output/top_16_max_post.tex")
