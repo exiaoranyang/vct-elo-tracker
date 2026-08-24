@@ -164,7 +164,7 @@ The `Compression` value, if set to <1.0, creates a season reset effect, where al
 ```math
 
 \begin{array}{rlrll}
-\text.bf{Team.ID} & \text.bf{Team} & \text.bf{Elo} & \text.bf{Peak Match} & \text.bf{Peak Tournament}\\ \hline
+\textbf{Team.ID} & \textbf{Team} & \textbf{Elo} & \textbf{Peak Match} & \textbf{Peak Tournament}\\ \hline
 624 & \text{Paper Rex} & 1901.247 & \text{Paper Rex vs G2 Esports} & \text{Valorant Champions 2025}\\
 1034 & \text{NRG} & 1867.404 & \text{NRG vs FNATIC} & \text{Valorant Champions 2025}\\
 17 & \text{Gen.G} & 1862.180 & \text{Gen.G vs Sentinels} & \text{Valorant Champions 2024}\\
