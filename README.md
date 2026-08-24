@@ -78,7 +78,7 @@ The `Compression` value, if set to <1.0, creates a season reset effect, where al
 
 **Cumulative Elo (Pre-franchising, 2021-2022):**
 
-$$
+```math
 
 \begin{array}{lrr}
 \textbf{Team}   & \textbf{Team ID} & \textbf{Elo} \\ \hline
@@ -99,11 +99,11 @@ $$
 \text{Team Liquid}     & 474              & 1601.180    
 \end{array}
 
-$$
+```
 
 **Cumulative Elo (Post-franchising, 2023-End of Masters London 2026):**
 
-$$
+```math
 
 \begin{array}{lrr}
 \textbf{Team}   & \textbf{Team ID} & \textbf{Elo} \\ \hline
@@ -124,7 +124,7 @@ $$
 \text{FULL SENSE}     & 4050              & 1306.825    
 \end{array}
 
-$$
+```
 
 ### Elo Peaks
 
@@ -132,7 +132,7 @@ $$
 
 <div style="overflow-x: auto; width: 100%;">
 
-$$
+```math
 
 \begin{array}{rlrll}
 \textbf{Team.ID} & \textbf{Team} & \textbf{Elo} & \textbf{Peak Match} & \textbf{Peak Tournament}\\ \hline
@@ -153,7 +153,7 @@ $$
 2355 & \text{KRÜ Esports} & 1888.220 & \text{FNATIC vs KRÜ Esports} & \text{Valorant Champions 2021}\\
 \end{array}
 
-$$
+```
 
 </div>
 
@@ -161,7 +161,7 @@ $$
 
 <div style="overflow-x: auto; width: 100%;">
 
-$$
+```math
 
 \begin{array}{rlrll}
 \text.bf{Team.ID} & \text.bf{Team} & \text.bf{Elo} & \text.bf{Peak Match} & \text.bf{Peak Tournament}\\ \hline
@@ -182,7 +182,7 @@ $$
 13790 & \text{Wolves Esports} & 1655.034 & \text{Wolves Esports vs Gen.G} & \text{Valorant Masters Toronto 2025}\\
 \end{array}
 
-$$
+```
 
 </div>
 
