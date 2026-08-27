@@ -26,6 +26,7 @@ vct-elo-tracker/
 
 - `Scripts/`: to be run in the order listed above. A `makefile` is planned to be integrated.
 - `input/`: to run the code, paste the datasets from Ryan Luong's kaggle page. The `archive` folder should be pasted as a subfolder in  `input/`.
+- At the moment, `input/` and `output/` folders must be manually created. Alternatively, you can set up custom paths for input and output folders via the `config.yaml` file. At the present moment, the `C` value weights are only internally available, and the  `run_elo.R` cannot be run without removing `C` variable calculations entirely. 
 - `config.yaml`: sets the parameters for how the elo calculations are run, and sets path options. I encourage exploring how the elo calculations run with different settings.
 
 ## Elo Calculation
@@ -188,7 +189,7 @@ The `Compression` value, if set to >0.0, creates a season reset effect, where al
 
 ### Notes
 
-- Note that cumulative elo represents the strenght of teams at the **very moment** calculations stop. This means cumulative elos for pre-franchising are the strongest teams (as rated by the calculations) as of the **end** of **Champs 2022**. And, post-franchising cumulative elo is the strongest teams as of the **end of Masters London 2026**.
+- Note that cumulative elo represents the strengths of teams at the **very moment** calculations stop. This means cumulative elos for pre-franchising are the strongest teams (as rated by the calculations) as of the **end** of **Champs 2022**. And, post-franchising cumulative elo is the strongest teams as of the **end of Masters London 2026**.
 - Because of the difference in sheer match numbers between pre and post franchising, elo values are not really comparable across pre and post franchised teams. 
 - Due to the design of the elo calculation, playing more matches typically results in higher elos, which means winners of early tournaments in the season are rated less (see FNATIC with a peak of 1845.388 despite winning back to back masters.)
 
